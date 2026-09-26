@@ -66,7 +66,7 @@ export function Header({ title, description, actions }: HeaderProps) {
                           : item.type === "debt"
                             ? "text-red-600 bg-red-100"
                             : item.type === "order"
-                              ? "text-slate-200 bg-slate-950"
+                              ? "text-primary-foreground bg-primary"
                               : "text-blue-600 bg-blue-100"
 
                       const Icon =

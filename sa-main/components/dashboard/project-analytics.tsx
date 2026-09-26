@@ -11,7 +11,7 @@ export function ProjectAnalytics() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-foreground">مبيعات الأسبوع</h2>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="w-2 h-2 rounded-full bg-slate-950" />
+          <div className="w-2 h-2 rounded-full bg-primary" />
           <span>بالدينار العراقي</span>
         </div>
       </div>
