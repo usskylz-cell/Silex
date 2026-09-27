@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Wallet, ArrowDownCircle, ArrowUpCircle, SearchX } from "lucide-react"
-import { useStore, formatIQD } from "@/components/store/store-context"
+import { useStore, formatIQD, normalizeDigits } from "@/components/store/store-context"
 import { toast } from "sonner"
 
 export function DebtsContent() {
@@ -36,9 +36,9 @@ export function DebtsContent() {
     const dueSoon = active.filter((d) => d.overdue).reduce((s, d) => s + d.amount, 0)
     const collected = debtors.filter((d) => d.paid).reduce((s, d) => s + d.amount, 0)
     return [
-      { title: "إجمالي الديون", value: formatIQD(total), icon: Wallet, accent: "text-foreground" },
-      { title: "متأخر السداد", value: formatIQD(dueSoon), icon: ArrowUpCircle, accent: "text-destructive" },
-      { title: "تم تحصيله", value: formatIQD(collected), icon: ArrowDownCircle, accent: "text-primary" },
+      { title: "إجمالي الديون", value: formatIQD(total), icon: Wallet, accent: "text-orange-700", bg: "bg-orange-50" },
+      { title: "متأخر السداد", value: formatIQD(dueSoon), icon: ArrowUpCircle, accent: "text-red-700", bg: "bg-red-50" },
+      { title: "تم تحصيله", value: formatIQD(collected), icon: ArrowDownCircle, accent: "text-emerald-700", bg: "bg-emerald-50" },
     ]
   }, [debtors])
 
@@ -49,7 +49,7 @@ export function DebtsContent() {
   }, [debtors, query])
 
   async function handleAdd() {
-    const value = Number(amount)
+    const value = Number(normalizeDigits(amount))
     if (!name.trim() || !value || value <= 0) {
       toast.error("يرجى إدخال اسم الزبون ومبلغ صحيح")
       return
@@ -59,7 +59,7 @@ export function DebtsContent() {
         name: name.trim(),
         phone: phone.trim() || "—",
         amount: value,
-        date: date.trim() || "غير محدد",
+        date: date || new Date().toISOString().slice(0, 10),
         overdue: true,
       })
       toast.success(`تمت إضافة دين ${name.trim()} بنجاح`)
@@ -102,8 +102,8 @@ export function DebtsContent() {
         {isLoading && <p className="text-sm text-muted-foreground">جار تحميل الديون...</p>}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {summary.map((item) => (
-            <Card key={item.title} className="p-4 flex items-center gap-3 transition-all duration-300 hover:shadow-lg">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
+            <Card key={item.title} className={`p-4 rounded-2xl border-0 shadow-sm flex items-center gap-3 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${item.bg ?? "bg-white"}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${item.bg ?? "bg-secondary"}`}>
                 <item.icon className={`w-5 h-5 ${item.accent}`} />
               </div>
               <div className="min-w-0">
@@ -162,11 +162,11 @@ export function DebtsContent() {
                       <TableCell className="text-muted-foreground text-sm">{debtor.date}</TableCell>
                       <TableCell>
                         {debtor.paid ? (
-                          <Badge className="font-normal bg-primary/15 text-primary hover:bg-primary/15">
+                          <Badge className="font-normal border bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
                             تم الاستلام
                           </Badge>
                         ) : (
-                          <Badge variant={debtor.overdue ? "destructive" : "secondary"} className="font-normal">
+                          <Badge className={`font-normal border ${debtor.overdue ? "bg-red-100 text-red-700 border-red-200" : "bg-orange-100 text-orange-700 border-orange-200"}`}>
                             {debtor.overdue ? "متأخر" : "ضمن المدة"}
                           </Badge>
                         )}
@@ -218,7 +218,7 @@ export function DebtsContent() {
                 <Label htmlFor="debt-amount">المبلغ (د.ع)</Label>
                 <Input
                   id="debt-amount"
-                  type="number"
+                  type="text" inputMode="decimal"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="1000"
@@ -230,9 +230,9 @@ export function DebtsContent() {
                 <Label htmlFor="debt-date">تاريخ الاستحقاق</Label>
                 <Input
                   id="debt-date"
+                  type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  placeholder="٢٠ نيسان"
                 />
               </div>
             </div>

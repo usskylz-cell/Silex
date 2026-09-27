@@ -37,8 +37,14 @@ export type Order = {
   customer: string
   items: number
   total: number
-  status: "مكتمل" | "قيد التجهيز" | "ملغى"
+  status: string
   time: string
+}
+
+export type TopProduct = {
+  name: string
+  quantity: number
+  total: number
 }
 
 export type StoreSettings = {
@@ -62,6 +68,7 @@ type StoreContextValue = {
   products: Product[]
   campaigns: Campaign[]
   orders: Order[]
+  topProducts: TopProduct[]
   settings: StoreSettings
   notifications: NotificationItem[]
   query: string
@@ -71,6 +78,7 @@ type StoreContextValue = {
   addDebtor: (d: Omit<Debtor, "id" | "paid">) => Promise<void>
   collectDebt: (id: string) => Promise<void>
   addProduct: (p: Omit<Product, "id">) => Promise<void>
+  getOrCreateCategory: (name: string) => Promise<string>
   restockProduct: (id: string, amount: number) => Promise<void>
   updateSetting: (key: keyof StoreSettings, value: boolean) => Promise<void>
   addCampaign: (c: Omit<Campaign, "id">) => void
@@ -98,6 +106,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([])
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [orders, setOrders] = useState<Order[]>([])
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([])
   const [settings, setSettings] = useState<StoreSettings>(defaultSettings)
   const [query, setQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -128,7 +137,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         { data: debtRows, error: debtsError },
         { data: profileSettingsRow, error: settingsError },
       ] = await Promise.all([
-        supabase.from("products").select("*").eq("merchant_id", merchantId).order("title"),
+        supabase.from("products").select("*, categories(name)").eq("merchant_id", merchantId).order("title"),
         supabase.from("debts").select("*").eq("merchant_id", merchantId).order("due_date", { ascending: true }),
         supabase
           .from("profiles")
@@ -144,7 +153,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           (productRows ?? []).map((row) => ({
             id: row.id,
             name: row.title,
-            category: row.category ?? "مواد غذائية",
+            category: row.categories?.name ?? row.category ?? "غير مصنف",
             stock: Number(row.stock ?? 0),
             max: Math.max(100, Number(row.stock ?? 0) * 2),
             price: Number(row.price),
@@ -158,8 +167,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             phone: row.phone ?? "—",
             amount: Number(row.total_amount ?? 0) - Number(row.paid_amount ?? 0),
             date: row.due_date ?? "غير محدد",
-            overdue: row.status === "متأخر",
-            paid: row.status === "تم الاستلام",
+            overdue: row.status === "overdue",
+            paid: row.status === "paid",
           })),
         )
       }
@@ -175,6 +184,53 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         weekly_reports: profileSettingsRow?.weekly_reports ?? false,
         dark_mode: savedDarkMode === "true",
       })
+
+      const [{ data: orderRows, error: ordersError }, { data: itemRows, error: itemsError }] = await Promise.all([
+        supabase
+          .from("orders")
+          .select("*")
+          .eq("merchant_id", merchantId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("order_items")
+          .select("product_name, quantity, line_total")
+          .eq("merchant_id", merchantId),
+      ])
+
+      if (ordersError) {
+        console.warn("orders query failed:", ordersError.message)
+      } else {
+        setOrders(
+          (orderRows ?? []).map((row) => ({
+            id: row.id,
+            customer: row.customer_name ?? "زبون",
+            items: row.items_count ?? 0,
+            total: Number(row.total_amount ?? 0),
+            status: row.status ?? "قيد التجهيز",
+            time: new Date(row.created_at).toLocaleString("ar-IQ", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" }),
+          })),
+        )
+      }
+
+      if (itemsError) {
+        console.warn("order_items query failed:", itemsError.message)
+      } else {
+        const grouped = new Map<string, { quantity: number; total: number }>()
+        for (const item of itemRows ?? []) {
+          const key = item.product_name ?? "منتج"
+          const prev = grouped.get(key) ?? { quantity: 0, total: 0 }
+          grouped.set(key, {
+            quantity: prev.quantity + Number(item.quantity ?? 0),
+            total: prev.total + Number(item.line_total ?? 0),
+          })
+        }
+        const sorted = Array.from(grouped.entries())
+          .map(([name, v]) => ({ name, quantity: v.quantity, total: v.total }))
+          .sort((a, b) => b.quantity - a.quantity)
+          .slice(0, 5)
+        setTopProducts(sorted)
+      }
 
       setIsLoading(false)
     }
@@ -246,6 +302,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       products,
       campaigns,
       orders,
+      topProducts,
       settings,
       notifications,
       query,
@@ -276,7 +333,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (!debtor) return
         const { error } = await supabase
           .from("debts")
-          .update({ status: "تم الاستلام", paid_amount: debtor.amount })
+          .update({ status: "paid", paid_amount: debtor.amount })
           .eq("id", id)
           .eq("merchant_id", user.id)
         if (error) throw error
@@ -299,6 +356,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           .single()
         if (error) throw error
         setProducts((prev) => [{ ...p, id: data.id, max: Math.max(100, p.stock * 2) }, ...prev])
+      },
+      getOrCreateCategory: async (name: string) => {
+        const trimmed = name.trim()
+        if (!trimmed) throw new Error("اسم التصنيف مطلوب")
+        if (!supabase) throw new Error("لم يتم إعداد اتصال Supabase")
+
+        const { data: existing } = await supabase
+          .from("categories")
+          .select("id")
+          .ilike("name", trimmed)
+          .maybeSingle()
+
+        if (existing) return existing.id
+
+        const slug = trimmed
+          .replace(/\s+/g, "-")
+          .replace(/[^\p{L}\p{N}-]/gu, "")
+          .toLowerCase()
+        const id = `${slug}-${Date.now().toString(36)}`
+
+        const { data: created, error } = await supabase
+          .from("categories")
+          .insert({ id, name: trimmed, image: "", sort: 999 })
+          .select("id")
+          .single()
+
+        if (error) throw error
+        return created.id
       },
       restockProduct: async (id, amount) => {
         if (!user) return
@@ -337,6 +422,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
+}
+
+export function normalizeDigits(input: string): string {
+  const easternArabic = "٠١٢٣٤٥٦٧٨٩"
+  const persian = "۰۱۲۳۴۵۶۷۸۹"
+  return input.replace(/[٠-٩۰-۹]/g, (ch) => {
+    const i1 = easternArabic.indexOf(ch)
+    if (i1 !== -1) return String(i1)
+    const i2 = persian.indexOf(ch)
+    if (i2 !== -1) return String(i2)
+    return ch
+  })
 }
 
 export function useStore() {

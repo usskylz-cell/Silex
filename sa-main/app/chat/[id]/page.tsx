@@ -12,6 +12,7 @@ import {
   subscribeToMessages,
   clearConversation,
   ChatMessage,
+  maybeTriggerAssistant,
 } from "@/lib/chat";
 import { supabase } from "@/lib/supabase";
 import { ChatImage } from "@/components/ChatImage";
@@ -150,15 +151,17 @@ export default function ChatDetailPage() {
         mediaPath = path;
       }
 
+      const sentContent = value || (kind === "video" ? "🎥 فيديو" : kind === "image" ? "📷 صورة" : "");
       await sendMessage(
         userId,
         convId,
-        value || (kind === "video" ? "🎥 فيديو" : kind === "image" ? "📷 صورة" : ""),
+        sentContent,
         mediaPath,
         kind ?? undefined,
         reply,
         prod ? { type: "product", id: prod.id, name: prod.name, price: prod.price, image: prod.image } : stor ? { type: "story", id: stor.id, text: stor.text, bg: stor.bg, image: stor.image } : undefined
       );
+      void maybeTriggerAssistant(convId, userId, sentContent);
     } catch (err: any) {
       alert(err.message || "حدث خطأ أثناء الإرسال");
       setText(value);

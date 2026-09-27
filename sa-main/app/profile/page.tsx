@@ -146,9 +146,9 @@ export default function ProfilePage() {
 
       <div className="px-6 mt-3 md:max-w-md md:mx-auto">
         {isMerchant ? (
-          <Link href={`/store/${user.id}`} className="flex items-center justify-center gap-2 border border-line rounded-pill py-2.5 text-sm font-semibold">
+          <Link href="/dashboard" className="flex items-center justify-center gap-2 border border-line rounded-pill py-2.5 text-sm font-semibold">
             <Store size={15} />
-            عرض متجري
+            لوحتي
           </Link>
         ) : (
           <Link href="/profile/merchant-setup" className="flex items-center justify-center gap-2 border border-ink rounded-pill py-2.5 text-sm font-semibold">

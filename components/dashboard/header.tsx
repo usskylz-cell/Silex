@@ -98,8 +98,7 @@ export function Header({ title, description, actions }: HeaderProps) {
 
           <div className="flex items-center gap-2 pe-2 md:pe-3 border-e border-border">
             <Avatar className="w-7 h-7 md:w-8 md:h-8 ring-2 ring-primary/20 transition-all duration-300 hover:ring-primary/40">
-              <AvatarImage src="/profile.jpg" alt="التاجر" />
-              <AvatarFallback className="text-xs">تج</AvatarFallback>
+              <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">تج</AvatarFallback>
             </Avatar>
           </div>
         </div>

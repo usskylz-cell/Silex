@@ -75,7 +75,7 @@ export function QuickActions() {
                 <Label htmlFor="order-items">عدد الأصناف</Label>
                 <Input
                   id="order-items"
-                  type="number"
+                  type="text" inputMode="decimal"
                   value={items}
                   onChange={(e) => setItems(e.target.value)}
                   placeholder="3"
@@ -87,7 +87,7 @@ export function QuickActions() {
                 <Label htmlFor="order-total">المبلغ (د.ع)</Label>
                 <Input
                   id="order-total"
-                  type="number"
+                  type="text" inputMode="decimal"
                   value={total}
                   onChange={(e) => setTotal(e.target.value)}
                   placeholder="15000"

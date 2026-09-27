@@ -20,23 +20,23 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Package, PackageX, Boxes, TrendingDown, SearchX, Plus } from "lucide-react"
-import { useStore, formatIQD, toArabicNumber, type Product } from "@/components/store/store-context"
+import { useStore, formatIQD, toArabicNumber, normalizeDigits, type Product } from "@/components/store/store-context"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 
 function statusOf(p: Product) {
-  if (p.stock === 0) return { label: "نفاذ", variant: "destructive" as const }
-  return { label: "متوفر", variant: "outline" as const }
+  if (p.stock === 0) return { label: "نفاذ", className: "bg-red-100 text-red-700 border-red-200" }
+  if (p.stock <= 15) return { label: "منخفض", className: "bg-orange-100 text-orange-700 border-orange-200" }
+  return { label: "متوفر", className: "bg-emerald-100 text-emerald-700 border-emerald-200" }
 }
 
-const categories = ["مواد غذائية", "مشروبات", "ألبان", "منظفات", "أخرى"]
 
 export function InventoryContent() {
-  const { products, addProduct, restockProduct, query, isLoading, dataError } = useStore()
+  const { products, addProduct, restockProduct, getOrCreateCategory, query, isLoading, dataError } = useStore()
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState("الكل")
   const [name, setName] = useState("")
-  const [category, setCategory] = useState("مواد غذائية")
+  const [category, setCategory] = useState("")
   const [stock, setStock] = useState("")
   const [price, setPrice] = useState("")
   const [image, setImage] = useState<File | null>(null)
@@ -47,10 +47,10 @@ export function InventoryContent() {
     const out = products.filter((p) => p.stock === 0).length
     const value = products.reduce((s, p) => s + p.stock * p.price, 0)
     return [
-      { title: "إجمالي المنتجات", value: toArabicNumber(total), icon: Boxes },
-      { title: "منتجات قاربت النفاد", value: toArabicNumber(low), icon: TrendingDown, accent: "text-destructive" },
-      { title: "نفدت من المخزن", value: toArabicNumber(out), icon: PackageX, accent: "text-destructive" },
-      { title: "قيمة المخزون", value: formatIQD(value), icon: Package },
+      { title: "إجمالي المنتجات", value: toArabicNumber(total), icon: Boxes, accent: "text-emerald-700", bg: "bg-emerald-50" },
+      { title: "منتجات قاربت النفاد", value: toArabicNumber(low), icon: TrendingDown, accent: "text-orange-700", bg: "bg-orange-50" },
+      { title: "نفدت من المخزن", value: toArabicNumber(out), icon: PackageX, accent: "text-red-700", bg: "bg-red-50" },
+      { title: "قيمة المخزون", value: formatIQD(value), icon: Package, accent: "text-emerald-700", bg: "bg-emerald-50" },
     ]
   }, [products])
 
@@ -64,10 +64,14 @@ export function InventoryContent() {
   }, [products, filter, query])
 
   async function handleAdd() {
-    const s = Number(stock)
-    const pr = Number(price)
+    const s = Number(normalizeDigits(stock))
+    const pr = Number(normalizeDigits(price))
     if (!name.trim() || pr <= 0 || Number.isNaN(s) || s < 0) {
       toast.error("يرجى إدخال اسم المنتج وسعر وكمية صحيحة")
+      return
+    }
+    if (!category.trim()) {
+      toast.error("يرجى كتابة تصنيف للمنتج")
       return
     }
     try {
@@ -80,13 +84,14 @@ export function InventoryContent() {
         const { data } = supabase.storage.from("product-images").getPublicUrl(filePath)
         imageUrl = data.publicUrl
       }
-      await addProduct({ name: name.trim(), category, stock: s, max: Math.max(100, s * 2), price: pr, imageUrl })
+      const categoryId = await getOrCreateCategory(category)
+      await addProduct({ name: name.trim(), category: categoryId, stock: s, max: Math.max(100, s * 2), price: pr, imageUrl })
       toast.success(`تمت إضافة ${name.trim()} إلى المخزن`)
       setName("")
       setStock("")
       setPrice("")
       setImage(null)
-      setCategory("مواد غذائية")
+      setCategory("")
       setOpen(false)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "تعذر إضافة المنتج")
@@ -122,7 +127,7 @@ export function InventoryContent() {
         {isLoading && <p className="text-sm text-muted-foreground">جار تحميل المنتجات...</p>}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {stats.map((item) => (
-            <Card key={item.title} className="p-4 transition-all duration-300 hover:shadow-lg">
+            <Card key={item.title} className={`p-4 rounded-2xl border-0 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${item.bg ?? "bg-white"}`}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">{item.title}</span>
                 <item.icon className={`w-4 h-4 ${item.accent ?? "text-primary"}`} />
@@ -136,7 +141,7 @@ export function InventoryContent() {
           <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-foreground">قائمة المنتجات</h2>
             <div className="flex flex-wrap gap-1.5">
-              {["الكل", ...categories.slice(0, 3)].map((cat) => (
+              {["الكل", ...Array.from(new Set(products.map((p) => p.category))).slice(0, 3)].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setFilter(cat)}
@@ -194,7 +199,7 @@ export function InventoryContent() {
                           {formatIQD(product.price)}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={status.variant} className="font-normal">
+                          <Badge className={`font-normal border ${status.className}`}>
                             {status.label}
                           </Badge>
                         </TableCell>
@@ -235,26 +240,20 @@ export function InventoryContent() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>الصنف</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="prod-category">الصنف</Label>
+              <Input
+                id="prod-category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="اكتب أي تصنيف يناسب منتجك"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="prod-stock">الكمية</Label>
                 <Input
                   id="prod-stock"
-                  type="number"
+                  type="text" inputMode="decimal"
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
                   placeholder="50"
@@ -266,7 +265,7 @@ export function InventoryContent() {
                 <Label htmlFor="prod-price">السعر (د.ع)</Label>
                 <Input
                   id="prod-price"
-                  type="number"
+                  type="text" inputMode="decimal"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="3000"

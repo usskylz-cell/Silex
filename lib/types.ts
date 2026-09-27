@@ -23,6 +23,10 @@ store_category?: string | null;
 
 store_bio?: string | null;
 
+assistant_enabled?: boolean | null;
+
+assistant_instructions?: string | null;
+
 }
 
 

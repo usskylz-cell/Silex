@@ -7,7 +7,7 @@ import { useStore, formatIQD } from "@/components/store/store-context"
 export function RecentOrders() {
   const { orders } = useStore()
   return (
-    <Card className="p-6 transition-all duration-500 hover:shadow-xl animate-slide-in-up">
+    <Card className="p-6 rounded-2xl border-0 shadow-sm bg-white transition-all duration-500 hover:shadow-md">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-semibold text-foreground">آخر الفواتير</h2>
         <span className="text-xs text-muted-foreground">اليوم</span>
@@ -23,7 +23,15 @@ export function RecentOrders() {
               <p className="text-[11px] text-muted-foreground">{order.id}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={order.status === "ملغى" ? "outline" : "secondary"} className="text-[10px] font-normal">
+              <Badge
+                className={`text-[10px] font-normal border ${
+                  order.status === "مكتمل"
+                    ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                    : order.status === "ملغى"
+                      ? "bg-red-100 text-red-700 border-red-200"
+                      : "bg-orange-100 text-orange-700 border-orange-200"
+                }`}
+              >
                 {order.status}
               </Badge>
               <span className="text-sm font-semibold text-foreground">{formatIQD(order.total)}</span>
