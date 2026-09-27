@@ -72,8 +72,8 @@ export async function GET(request: Request) {
       [outstandingDebts.toString(), ar("ديون مستحقة")],
     ],
     theme: "grid",
-    headStyles: { fillColor: [17, 17, 17], font: "Amiri", halign: "right" },
-    styles: { font: "Amiri", halign: "right" },
+    headStyles: { fillColor: [17, 17, 17], font: "Amiri", fontStyle: "normal", halign: "right" },
+    styles: { font: "Amiri", fontStyle: "normal", halign: "right" },
     columnStyles: { 0: { halign: "left" } },
   })
 
@@ -91,8 +91,8 @@ export async function GET(request: Request) {
       new Date(o.created_at).toLocaleDateString("en-GB"),
     ]),
     theme: "striped",
-    headStyles: { fillColor: [17, 17, 17], font: "Amiri", halign: "right" },
-    styles: { font: "Amiri", halign: "right" },
+    headStyles: { fillColor: [17, 17, 17], font: "Amiri", fontStyle: "normal", halign: "right" },
+    styles: { font: "Amiri", fontStyle: "normal", halign: "right" },
   })
 
   const afterOrdersY = (doc as any).lastAutoTable.finalY + 10
@@ -109,8 +109,8 @@ export async function GET(request: Request) {
       ar(p.title),
     ]),
     theme: "striped",
-    headStyles: { fillColor: [17, 17, 17], font: "Amiri", halign: "right" },
-    styles: { font: "Amiri", halign: "right" },
+    headStyles: { fillColor: [17, 17, 17], font: "Amiri", fontStyle: "normal", halign: "right" },
+    styles: { font: "Amiri", fontStyle: "normal", halign: "right" },
   })
 
   const afterProductsY = (doc as any).lastAutoTable.finalY + 10
@@ -127,8 +127,8 @@ export async function GET(request: Request) {
       ar(d.customer_name),
     ]),
     theme: "striped",
-    headStyles: { fillColor: [17, 17, 17], font: "Amiri", halign: "right" },
-    styles: { font: "Amiri", halign: "right" },
+    headStyles: { fillColor: [17, 17, 17], font: "Amiri", fontStyle: "normal", halign: "right" },
+    styles: { font: "Amiri", fontStyle: "normal", halign: "right" },
   })
 
   const pdfBuffer = Buffer.from(doc.output("arraybuffer"))
