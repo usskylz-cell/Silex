@@ -320,7 +320,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             total_amount: d.amount,
             paid_amount: 0,
             due_date: d.date,
-            status: "متأخر",
+            status: "overdue",
           })
           .select()
           .single()

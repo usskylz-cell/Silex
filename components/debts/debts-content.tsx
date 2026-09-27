@@ -69,7 +69,7 @@ export function DebtsContent() {
       setDate("")
       setOpen(false)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر إضافة الدين")
+      toast.error((error as any)?.message || "تعذر إضافة الدين")
     }
   }
 
@@ -78,7 +78,7 @@ export function DebtsContent() {
       await collectDebt(id)
       toast.success(`تم استلام دين ${debtorName}`)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر تحديث الدين")
+      toast.error((error as any)?.message || "تعذر تحديث الدين")
     }
   }
 

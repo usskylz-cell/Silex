@@ -94,7 +94,7 @@ export function InventoryContent() {
       setCategory("")
       setOpen(false)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر إضافة المنتج")
+      toast.error((error as any)?.message || "تعذر إضافة المنتج")
     }
   }
 
@@ -103,7 +103,7 @@ export function InventoryContent() {
       await restockProduct(id, 20)
       toast.success(`تم استلام ٢٠ وحدة من ${productName}`)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر تحديث المخزون")
+      toast.error((error as any)?.message || "تعذر تحديث المخزون")
     }
   }
 
