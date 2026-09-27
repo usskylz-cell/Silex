@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MobileNav } from "./mobile-nav"
 import { useStore } from "@/components/store/store-context"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
+import { useEffect, useState as useState2 } from "react"
 import type { ReactNode } from "react"
 import { useState } from "react"
 
@@ -16,6 +19,27 @@ interface HeaderProps {
 
 export function Header({ title, description, actions }: HeaderProps) {
   const { query, setQuery, notifications } = useStore()
+  const router = useRouter()
+  const [me, setMe] = useState2<{ store_name: string | null; full_name: string | null; avatar_url: string | null } | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id
+      if (!uid) return
+      supabase
+        .from("profiles")
+        .select("store_name, full_name, avatar_url")
+        .eq("id", uid)
+        .single()
+        .then(({ data: p }) => {
+          if (alive) setMe(p as any)
+        })
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
   const [showNotifications, setShowNotifications] = useState(false)
 
   return (
@@ -96,11 +120,18 @@ export function Header({ title, description, actions }: HeaderProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-2 pe-2 md:pe-3 border-e border-border">
+          <button
+            onClick={() => router.push("/profile")}
+            className="flex items-center gap-2 pe-2 md:pe-3 border-e border-border"
+            aria-label="حسابي"
+          >
             <Avatar className="w-7 h-7 md:w-8 md:h-8 ring-2 ring-primary/20 transition-all duration-300 hover:ring-primary/40">
-              <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">تج</AvatarFallback>
+              {me?.avatar_url && <AvatarImage src={me.avatar_url} alt="" />}
+              <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
+                {(me?.store_name ?? me?.full_name ?? "؟").charAt(0)}
+              </AvatarFallback>
             </Avatar>
-          </div>
+          </button>
         </div>
       </div>
 

@@ -35,12 +35,12 @@ export async function POST(req: NextRequest) {
 
     const { data: merchant } = await supabaseAdmin
       .from("profiles")
-      .select("store_name, bot_enabled, bot_hours_enabled, bot_hours_start, bot_hours_end, bot_tone, bot_delivery_policy, bot_return_policy")
+      .select("store_name, assistant_enabled, assistant_instructions, bot_hours_enabled, bot_hours_start, bot_hours_end")
       .eq("id", conv.merchant_id)
       .maybeSingle()
 
-    if (!merchant || !merchant.bot_enabled) {
-      return NextResponse.json({ skipped: "bot_disabled" })
+    if (!merchant || !merchant.assistant_enabled) {
+      return NextResponse.json({ skipped: "assistant_disabled" })
     }
 
     if (merchant.bot_hours_enabled && !isWithinBotHours(merchant.bot_hours_start, merchant.bot_hours_end)) {
@@ -54,15 +54,16 @@ export async function POST(req: NextRequest) {
       .gt("stock", 0)
       .limit(50)
 
-    const systemPrompt = `أنت مساعد مبيعات لمتجر "${merchant.store_name || "المتجر"}".
-تحدث بالعربية بأسلوب ${merchant.bot_tone || "ودود ومحترف"}.
-سياسة التوصيل: ${merchant.bot_delivery_policy || "غير محددة، اطلب من الزبون التواصل لمعرفة التفاصيل"}.
-سياسة الاستبدال: ${merchant.bot_return_policy || "غير محددة"}.
+    const systemPrompt = `أنت موظف مبيعات حقيقي تعمل لدى متجر "${merchant.store_name || "المتجر"}"، ولست نموذج ذكاء اصطناعي عام.
+
+${merchant.assistant_instructions ? `# قواعد إلزامية من صاحب المتجر (يجب اتباعها حرفيًا مهما كان السؤال):
+${merchant.assistant_instructions}
+` : "تحدث بأسلوب ودود ومحترف."}
 
 قائمة المنتجات المتوفرة حالياً (اعتمد عليها حصراً، لا تخترع منتجات أو أسعار غير موجودة هنا):
 ${JSON.stringify(products ?? [])}
 
-قواعد صارمة:
+قواعد صارمة إضافية:
 - أجب فقط بناءً على البيانات أعلاه.
 - لو سُئلت عن منتج غير موجود بالقائمة، اعتذر بلباقة وقل إنه غير متوفر حالياً.
 - لو الزبون طلب التحدث مع شخص حقيقي، أو كان الطلب معقداً جداً، أو غاضباً، قل بالضبط: "سأحول محادثتك الآن لأحد ممثلي المتجر."
@@ -70,7 +71,7 @@ ${JSON.stringify(products ?? [])}
 - اجعل ردودك مختصرة ومباشرة.`
 
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -51,7 +51,7 @@ export function SocialLinksDisplay({ userId }: { userId: string }) {
   if (!links.length) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 justify-center">
+    <div className="flex flex-wrap gap-2.5 justify-center">
       {links.map((l) => {
         const meta = PLATFORMS[l.platform] ?? PLATFORMS.website;
         const Icon = meta.icon;
@@ -61,10 +61,11 @@ export function SocialLinksDisplay({ userId }: { userId: string }) {
             href={l.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-chip hover:bg-line/40 transition-colors rounded-pill px-3 py-2 text-xs font-medium"
+            aria-label={l.label ?? meta.label}
+            title={l.label ?? meta.label}
+            className="w-9 h-9 rounded-full bg-chip hover:bg-line/40 transition-colors flex items-center justify-center"
           >
-            <Icon size={15} style={{ color: meta.color }} />
-            <span>{l.label ?? meta.label}</span>
+            <Icon size={17} style={{ color: meta.color }} />
           </a>
         );
       })}

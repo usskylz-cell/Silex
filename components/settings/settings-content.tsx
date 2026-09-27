@@ -14,6 +14,9 @@ export function SettingsContent() {
   const { profile, setProfile } = useProfile()
   const [assistantEnabled, setAssistantEnabled] = useState(profile?.assistant_enabled ?? false)
   const [instructions, setInstructions] = useState(profile?.assistant_instructions ?? "")
+  const [hoursEnabled, setHoursEnabled] = useState((profile as any)?.bot_hours_enabled ?? false)
+  const [hoursStart, setHoursStart] = useState((profile as any)?.bot_hours_start?.slice(0, 5) ?? "09:00")
+  const [hoursEnd, setHoursEnd] = useState((profile as any)?.bot_hours_end?.slice(0, 5) ?? "22:00")
   const [saving, setSaving] = useState(false)
 
   const notificationItems = [
@@ -57,14 +60,19 @@ export function SettingsContent() {
     setSaving(true)
     const { error } = await supabase
       .from("profiles")
-      .update({ assistant_instructions: instructions.trim() || null })
+      .update({
+        assistant_instructions: instructions.trim() || null,
+        bot_hours_enabled: hoursEnabled,
+        bot_hours_start: hoursStart,
+        bot_hours_end: hoursEnd,
+      })
       .eq("id", profile.id)
     setSaving(false)
     if (error) {
-      toast.error("تعذر حفظ التعليمات")
+      toast.error("تعذر حفظ الإعدادات")
     } else {
-      setProfile({ ...profile, assistant_instructions: instructions.trim() } as any)
-      toast.success("تم حفظ أسلوب المساعد")
+      setProfile({ ...profile, assistant_instructions: instructions.trim(), bot_hours_enabled: hoursEnabled, bot_hours_start: hoursStart, bot_hours_end: hoursEnd } as any)
+      toast.success("تم حفظ إعدادات المساعد")
     }
   }
 
@@ -84,7 +92,7 @@ export function SettingsContent() {
         {assistantEnabled && (
           <div className="space-y-3 pt-4 border-t border-line">
             <div>
-              <label className="text-sm font-medium text-ink">أسلوب الرد (اختياري)</label>
+              <label className="text-sm font-medium text-ink">قواعد وتعليمات إلزامية للبوت (اختياري)</label>
               <p className="text-xs text-muted mb-2">
                 مثال: رد بأسلوب ودود ومختصر، واذكر إن التوصيل خلال يومين. اتركه فارغًا لأسلوب افتراضي مهني.
               </p>
@@ -97,6 +105,38 @@ export function SettingsContent() {
                 className="w-full rounded-xl border border-line bg-white px-3 py-2 text-sm outline-none focus:border-ink"
               />
             </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <label className="text-sm font-medium text-ink">تحديد أوقات عمل المساعد</label>
+                <p className="text-xs text-muted">إذا كان متوقفًا، يرد المساعد على مدار الساعة.</p>
+              </div>
+              <Switch checked={hoursEnabled} onCheckedChange={setHoursEnabled} />
+            </div>
+
+            {hoursEnabled && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-ink block mb-1">من الساعة</label>
+                  <input
+                    type="time"
+                    value={hoursStart}
+                    onChange={(e) => setHoursStart(e.target.value)}
+                    className="w-full rounded-xl border border-line bg-white px-3 py-2 text-sm outline-none focus:border-ink"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-ink block mb-1">إلى الساعة</label>
+                  <input
+                    type="time"
+                    value={hoursEnd}
+                    onChange={(e) => setHoursEnd(e.target.value)}
+                    className="w-full rounded-xl border border-line bg-white px-3 py-2 text-sm outline-none focus:border-ink"
+                  />
+                </div>
+              </div>
+            )}
+
             <Button onClick={saveInstructions} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {saving ? "جارٍ الحفظ..." : "حفظ الأسلوب"}
             </Button>
@@ -122,6 +162,7 @@ export function SettingsContent() {
               <Switch
                 checked={settings[item.key]}
                 onCheckedChange={(checked) => void updateSetting(item.key, checked)}
+               
               />
             </div>
           ))}

@@ -21,12 +21,12 @@ import {
 import { Boxes, PackageX, TrendingDown, Wallet } from "lucide-react"
 import { useStore, formatIQD, toArabicNumber } from "@/components/store/store-context"
 
-const palette = ["#111111", "#3F3F3F", "#7A7A7A", "#B5B5B5", "#DCDCDC"]
+const palette = ["#16A34A", "#22C55E", "#4ADE80", "#DC2626", "#F87171", "#FB923C"]
 
 function ChartTooltip({ active, payload, suffix }: any) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-ink text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-lg">
+      <div className="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-lg">
         <p className="font-bold">
           {payload[0].value} {suffix}
         </p>
@@ -75,7 +75,11 @@ export function AnalyticsContent() {
       byCategory.set(p.category, (byCategory.get(p.category) ?? 0) + p.stock)
     })
     return Array.from(byCategory.entries())
-      .map(([category, stock]) => ({ category, stock }))
+      .map(([category, stock]) => ({
+        category,
+        stock,
+        color: stock === 0 ? "#DC2626" : stock <= 15 ? "#F97316" : "#16A34A",
+      }))
       .sort((a, b) => b.stock - a.stock)
       .slice(0, 6)
   }, [products])
@@ -184,7 +188,11 @@ export function AnalyticsContent() {
                     />
                     <YAxis orientation="right" axisLine={false} tickLine={false} tick={{ fill: "#8B8B8B", fontSize: 11 }} />
                     <Tooltip content={<ChartTooltip suffix="وحدة" />} cursor={{ fill: "transparent" }} />
-                    <Bar dataKey="stock" fill="#111111" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="stock" radius={[6, 6, 0, 0]} maxBarSize={40}>
+                      {stockByCategory.map((entry) => (
+                        <Cell key={entry.category} fill={entry.color} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

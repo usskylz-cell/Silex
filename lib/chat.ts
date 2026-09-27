@@ -297,6 +297,9 @@ await supabase
 .eq("id", convId);
 
 
+void maybeTriggerAssistant(convId, userId, content.trim());
+
+
 return data as ChatMessage;
 
 }
