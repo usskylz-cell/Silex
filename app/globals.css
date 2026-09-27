@@ -93,13 +93,3 @@ body {
     @apply font-sans;
   }
 }
-
-/* إخفاء أزرار +/- من أي حقل رقمي متبقي بكل اللوح */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type="number"] {
-  -moz-appearance: textfield;
-}
