@@ -1,6 +1,8 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { supabase } from "@/lib/supabase"
+import { FileSpreadsheet, FileText } from "lucide-react"
 import { Header } from "@/components/dashboard/header"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -77,6 +79,62 @@ export function AnalyticsContent() {
       .sort((a, b) => b.stock - a.stock)
       .slice(0, 6)
   }, [products])
+
+  const [downloading, setDownloading] = useState(false)
+
+  async function downloadWeeklyReport() {
+    setDownloading(true)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      if (!token) throw new Error("لا توجد جلسة دخول")
+      const response = await fetch("/api/reports/weekly", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) throw new Error("تعذر إنشاء التقرير")
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `تقرير-أسبوعي-${new Date().toLocaleDateString("ar-IQ")}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
+
+  async function downloadWeeklyPdf() {
+    setDownloadingPdf(true)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      if (!token) throw new Error("لا توجد جلسة دخول")
+      const response = await fetch("/api/reports/weekly-pdf", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) throw new Error("تعذر إنشاء التقرير")
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `weekly-report-${new Date().toISOString().slice(0, 10)}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setDownloadingPdf(false)
+    }
+  }
 
   return (
     <>
@@ -172,6 +230,31 @@ export function AnalyticsContent() {
 
         <Card className="p-4 md:p-6 text-sm text-muted">
           تحليلات المبيعات (الأكثر رواجًا، الاتجاه الشهري) ستُحسب هنا تلقائيًا من فواتيرك الحقيقية بمجرد تسجيل مبيعات كافية.
+        </Card>
+
+        <Card className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="font-semibold text-ink">التقرير الأسبوعي</h3>
+            <p className="text-sm text-muted mt-0.5">حمّل ملخصًا كاملاً لمبيعاتك ومخزونك وديونك بآخر ٧ أيام.</p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={downloadWeeklyReport}
+              disabled={downloading}
+              className="flex items-center gap-2 bg-primary text-primary-foreground rounded-xl px-4 py-2.5 text-sm font-medium disabled:opacity-50 transition-opacity hover:opacity-90"
+            >
+              <FileSpreadsheet size={16} />
+              {downloading ? "جارٍ..." : "Excel"}
+            </button>
+            <button
+              onClick={downloadWeeklyPdf}
+              disabled={downloadingPdf}
+              className="flex items-center gap-2 bg-white text-ink border border-line rounded-xl px-4 py-2.5 text-sm font-medium disabled:opacity-50 transition-colors hover:bg-chip"
+            >
+              <FileText size={16} />
+              {downloadingPdf ? "جارٍ..." : "PDF"}
+            </button>
+          </div>
         </Card>
       </div>
     </>
