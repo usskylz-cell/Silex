@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { amiriFontBase64 } from "@/lib/fonts/amiri-font"
-import ArabicReshaper from "arabic-reshaper"
+const ArabicReshaper = require("arabic-reshaper")
 
 function clientForUser(token: string) {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
