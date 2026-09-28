@@ -1,5 +1,6 @@
 "use client";
 
+import { CartButton } from "@/components/ui/CartButton";
 import { toast } from "sonner";
 import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState, useRef } from "react";
@@ -372,13 +373,7 @@ export default function PostDetailPage() {
 
         {post.product_id && !isOwner && (
           <div className="px-4 py-3 border-b border-chip">
-            <button
-              onClick={addToCart}
-              className="w-full bg-ink text-white rounded-pill py-2.5 text-sm font-semibold flex items-center justify-center gap-2"
-            >
-              <ShoppingBag size={15} />
-              {added ? "أُضيف ✓" : "أضف للسلة"}
-            </button>
+            <CartButton productId={post.product_id} onAdd={addToCart} className="w-full" />
           </div>
         )}
 

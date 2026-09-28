@@ -129,8 +129,8 @@ export default function ProfilePage() {
           تعديل الملف
         </Link>
         {isMerchant && (
-          <Link href="/profile/studio" aria-label="نشر" className="w-11 h-11 shrink-0 rounded-full bg-ink text-white flex items-center justify-center">
-            <Plus size={18} />
+          <Link href="/profile/studio" aria-label="نشر" className="w-11 h-11 shrink-0 rounded-full border-2 border-ink text-ink bg-transparent hover:bg-chip transition-colors flex items-center justify-center">
+            <Plus size={20} strokeWidth={2.2} />
           </Link>
         )}
         <button onClick={handleShare} aria-label="مشاركة" className="w-11 h-11 shrink-0 rounded-full bg-chip flex items-center justify-center">

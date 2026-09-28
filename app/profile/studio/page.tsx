@@ -1,5 +1,7 @@
 "use client";
 
+import { Dropdown } from "@/components/ui/Dropdown";
+import { Notice } from "@/components/ui/Notice";
 import { toast } from "sonner";
 import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useRef, useState } from "react";
@@ -291,19 +293,14 @@ export default function StudioPage() {
             type="button"
             onClick={() => fileRef.current?.click()}
             aria-label="إضافة"
-            className="w-full aspect-square rounded-3xl bg-chip flex items-center justify-center hover:bg-line/40 transition-colors"
+            className="w-full aspect-square rounded-3xl border-2 border-dashed border-ink/25 bg-transparent flex items-center justify-center hover:bg-chip transition-colors"
           >
-            <span className="w-20 h-20 rounded-full bg-ink text-white flex items-center justify-center">
-              <Plus size={38} strokeWidth={2.2} />
-            </span>
+            <Plus size={44} strokeWidth={1.6} className="text-ink/60" />
           </button>
           <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFile} />
           <p className="text-xs text-muted text-center">صورة (حتى 10MB) أو فيديو (حتى 50MB)</p>
           {pickErr && (
-            <p className="flex items-start gap-2 text-xs text-red-600 bg-red-500/10 border border-red-500/20 rounded-xl p-3 w-full">
-              <AlertCircle size={14} className="shrink-0 mt-0.5" />
-              {pickErr}
-            </p>
+            <Notice type="error">{pickErr}</Notice>
           )}
         </div>
       )}
@@ -364,22 +361,9 @@ export default function StudioPage() {
           <div>
             <p className="text-[11px] text-muted mb-1.5 px-1">التصنيف</p>
             {cats.length === 0 ? (
-              <p className="text-xs text-red-600 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-                لا توجد تصنيفات متاحة حالياً. تواصل مع الدعم.
-              </p>
+              <Notice type="error">لا توجد تصنيفات متاحة حالياً. تواصل مع الدعم.</Notice>
             ) : (
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-chip rounded-2xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-ink/20"
-              >
-                <option value="">اختر التصنيف</option>
-                {cats.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <Dropdown options={cats.map((c) => ({ value: c.id, label: c.name }))} value={category} onChange={setCategory} placeholder="اختر التصنيف" />
             )}
           </div>
 
@@ -442,12 +426,7 @@ export default function StudioPage() {
             </div>
           </button>
 
-          {err && (
-            <p className="flex items-start gap-2 text-xs text-red-600 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-              <AlertCircle size={14} className="shrink-0 mt-0.5" />
-              {err}
-            </p>
-          )}
+          {err && <Notice type="error">{err}</Notice>}
 
           <button onClick={publish} className="w-full bg-ink text-white rounded-pill py-3.5 text-sm font-semibold">
             نشر

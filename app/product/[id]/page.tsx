@@ -1,5 +1,6 @@
 "use client";
 
+import { CartButton } from "@/components/ui/CartButton";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -184,16 +185,17 @@ export default function ProductPage() {
             </div>
           </div>
           {!loading && viewerId !== product.merchantId && (
-            <button
-              onClick={() => {
-                add(product, 1, { color: product.colors?.[color] ?? null, size });
-                setAdded(true);
-                setTimeout(() => setAdded(false), 1500);
-              }}
-              className="flex-1 bg-ink text-white rounded-pill py-3.5 text-sm font-semibold"
-            >
-              {added ? "أُضيف ✓" : "أضف إلى السلة"}
-            </button>
+            <CartButton
+              productId={product.id}
+              size="lg"
+              className="flex-1"
+              match={(l) =>
+                l.product.id === product.id &&
+                (l.color ?? null) === (product.colors?.[color] ?? null) &&
+                (l.size ?? null) === (size ?? null)
+              }
+              onAdd={() => add(product, 1, { color: product.colors?.[color] ?? null, size })}
+            />
           )}
         </div>
 

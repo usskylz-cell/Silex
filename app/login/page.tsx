@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/Notice";
 import { useState, useEffect, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -148,9 +149,7 @@ export default function LoginPage() {
           </div>
 
           {err && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-600 text-xs rounded-xl text-center">
-              {err}
-            </div>
+            <Notice type="error">{err}</Notice>
           )}
 
           <button

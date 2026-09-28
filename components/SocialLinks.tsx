@@ -1,5 +1,6 @@
 "use client";
 
+import { Dropdown } from "@/components/ui/Dropdown";
 import { useEffect, useState } from "react";
 import { Plus, Trash2, ExternalLink, Globe } from "lucide-react";
 import {
@@ -145,17 +146,7 @@ export function SocialLinksEditor({ userId }: { userId: string }) {
       })}
 
       <div className="flex items-center gap-2">
-        <select
-          value={platform}
-          onChange={(e) => setPlatform(e.target.value)}
-          className="bg-chip border border-transparent rounded-xl px-2 py-2.5 text-xs focus:outline-none focus:border-ink/30"
-        >
-          {Object.entries(PLATFORMS).map(([key, v]) => (
-            <option key={key} value={key}>
-              {v.label}
-            </option>
-          ))}
-        </select>
+        <Dropdown options={Object.entries(PLATFORMS).map(([key, v]) => ({ value: key, label: v.label }))} value={platform} onChange={setPlatform} className="bg-chip rounded-xl px-3 py-2.5 text-xs" />
         <input
           type="url"
           value={url}

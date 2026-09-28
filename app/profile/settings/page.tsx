@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/Notice";
 import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -156,17 +157,7 @@ export default function SettingsPage() {
         <h1 className="text-lg font-bold text-ink">إعدادات الحساب وتعديل الملف</h1>
       </div>
 
-      {msg && (
-        <div
-          className={`p-3 rounded-xl text-xs text-center border ${
-            msg.type === "ok"
-              ? "bg-green-500/10 border-green-500/20 text-green-700"
-              : "bg-red-500/10 border-red-500/20 text-red-600"
-          }`}
-        >
-          {msg.text}
-        </div>
-      )}
+      {msg && <Notice type={msg.type === "ok" ? "success" : "error"}>{msg.text}</Notice>}
 
       <div className="bg-card border border-line/40 rounded-2xl p-6 flex flex-col items-center justify-center space-y-3">
         <div className="relative group">

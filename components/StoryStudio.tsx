@@ -1,5 +1,7 @@
 "use client";
 
+import { Notice } from "@/components/ui/Notice";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Eye, Trash2, ImagePlus, X, Type } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -260,20 +262,9 @@ export function StoryStudio({ profile }: { profile: Profile }) {
           </div>
         )}
 
-        <select
-          className="w-full bg-chip rounded-2xl px-4 py-3 text-sm outline-none"
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
-        >
-          <option value="">بدون رابط منتج</option>
-          {products.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
-          ))}
-        </select>
+        <Dropdown direction="up" options={[{ value: "", label: "بدون رابط منتج" }, ...products.map((p) => ({ value: p.id, label: p.title }))]} value={productId} onChange={setProductId} className="bg-chip rounded-2xl px-4 py-3 text-sm outline-none" />
 
-        {err && <p className="text-xs text-red-500">{err}</p>}
+        {err && <Notice type="error">{err}</Notice>}
 
         {/* زر النشر - أسود واضح */}
         <button

@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/Notice";
 import { toast } from "sonner";
 import { useState, FormEvent } from "react";
 import Link from "next/link";
@@ -153,9 +154,7 @@ export default function RegisterPage() {
           </div>
 
           {err && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-600 text-xs rounded-xl text-center">
-              {err}
-            </div>
+            <Notice type="error">{err}</Notice>
           )}
 
           <button

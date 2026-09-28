@@ -1,5 +1,7 @@
 "use client";
 
+import { Dropdown } from "@/components/ui/Dropdown";
+import { Notice } from "@/components/ui/Notice";
 import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -89,14 +91,7 @@ export default function MerchantSetupPage() {
 
         <div>
           <label className="block text-xs font-medium mb-1">تصنيف المتجر</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className={field}>
-            <option value="">اختر التصنيف</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <Dropdown options={categories.map((c) => ({ value: c.id, label: c.name }))} value={category} onChange={setCategory} placeholder="اختر التصنيف" className={field} />
         </div>
 
         <div>
@@ -121,9 +116,7 @@ export default function MerchantSetupPage() {
         </div>
 
         {err && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-600 text-xs rounded-xl text-center">
-            {err}
-          </div>
+          <Notice type="error">{err}</Notice>
         )}
 
         <button

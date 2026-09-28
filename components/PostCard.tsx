@@ -1,5 +1,6 @@
 "use client";
 
+import { CartButton } from "@/components/ui/CartButton";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -214,13 +215,7 @@ export function PostCard({ post }: { post: FeedPost }) {
       </div>
 
       {post.product_id && !isOwner && (
-        <button
-          onClick={addToCart}
-          className="w-[calc(100%-32px)] mx-4 mb-3 bg-ink text-white rounded-pill py-2.5 text-sm font-semibold flex items-center justify-center gap-2"
-        >
-          <ShoppingBag size={15} />
-          {added ? "أُضيف ✓" : "أضف للسلة"}
-        </button>
+        <CartButton productId={post.product_id} onAdd={addToCart} className="w-[calc(100%-32px)] mx-4 mb-3" />
       )}
 
       {(post.title || post.caption) && (

@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/Notice";
 import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -109,9 +110,7 @@ export default function EditPostPage() {
         </div>
 
         {err && (
-          <p className="text-xs text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-center">
-            {err}
-          </p>
+          <Notice type="error">{err}</Notice>
         )}
 
         <button
