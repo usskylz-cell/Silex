@@ -467,48 +467,25 @@ await supabase
 }
 
 
-export async function maybeTriggerAssistant(conversationId: string, senderId: string, content: string) {
+export async function maybeTriggerAssistant(conversationId: string, senderId: string, content: string, meta?: unknown) {
+  try {
+    const { data: conv } = await supabase
+      .from("conversations")
+      .select("customer_id, merchant_id")
+      .eq("id", conversationId)
+      .maybeSingle();
+    if (!conv) return;
+    if (senderId !== conv.customer_id && senderId !== conv.merchant_id) return;
+    if (meta && (meta as any).from_bot) return;
 
-try {
+    const recipientId = senderId === conv.customer_id ? conv.merchant_id : conv.customer_id;
 
-const { data: conv } = await supabase
-
-.from("conversations")
-
-.select("customer_id, merchant_id")
-
-.eq("id", conversationId)
-
-.maybeSingle();
-
-if (!conv) return;
-
-
-if (senderId === conv.merchant_id) {
-
-await supabase.from("conversations").update({ ai_muted: true }).eq("id", conversationId);
-
-return;
-
-}
-
-
-if (senderId === conv.customer_id) {
-
-fetch("/api/assistant-reply", {
-
-method: "POST",
-
-headers: { "Content-Type": "application/json" },
-
-body: JSON.stringify({ conversationId, customerMessage: content }),
-
-}).catch(() => {});
-
-}
-
-} catch {}
-
+    fetch("/api/assistant-reply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId, customerMessage: content, senderId, recipientId }),
+    }).catch(() => {});
+  } catch {}
 }
 
 

@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js"
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 function isWithinBotHours(start: string, end: string): boolean {
@@ -19,24 +19,31 @@ function isWithinBotHours(start: string, end: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    const { conversationId, customerMessage } = await req.json()
+    const { conversationId, customerMessage, senderId, recipientId } = await req.json()
     if (!conversationId || !customerMessage) {
       return NextResponse.json({ error: "بيانات ناقصة" }, { status: 400 })
     }
 
     const { data: conv } = await supabaseAdmin
       .from("conversations")
-      .select("merchant_id, ai_muted")
+      .select("customer_id, merchant_id")
       .eq("id", conversationId)
       .maybeSingle()
 
     if (!conv) return NextResponse.json({ error: "المحادثة غير موجودة" }, { status: 404 })
-    if (conv.ai_muted) return NextResponse.json({ skipped: "ai_muted" })
+    if (
+      !recipientId ||
+      (recipientId !== conv.customer_id && recipientId !== conv.merchant_id) ||
+      (senderId !== conv.customer_id && senderId !== conv.merchant_id) ||
+      senderId === recipientId
+    ) {
+      return NextResponse.json({ error: "أطراف المحادثة غير صحيحة" }, { status: 400 })
+    }
 
     const { data: merchant } = await supabaseAdmin
       .from("profiles")
       .select("store_name, assistant_enabled, assistant_instructions, bot_hours_enabled, bot_hours_start, bot_hours_end")
-      .eq("id", conv.merchant_id)
+      .eq("id", recipientId)
       .maybeSingle()
 
     if (!merchant || !merchant.assistant_enabled) {
@@ -50,7 +57,7 @@ export async function POST(req: NextRequest) {
     const { data: products } = await supabaseAdmin
       .from("products")
       .select("title, price, stock, category")
-      .eq("merchant_id", conv.merchant_id)
+      .eq("merchant_id", recipientId)
       .gt("stock", 0)
       .limit(50)
 
@@ -87,21 +94,24 @@ ${JSON.stringify(products ?? [])}
 
     if (!replyText) {
       console.error("Gemini response error:", JSON.stringify(geminiData))
-      return NextResponse.json({ error: "تعذر توليد رد" }, { status: 500 })
+      await supabaseAdmin.from("messages").insert({
+        conversation_id: conversationId,
+        sender_id: recipientId,
+        content: "وصلتنا رسالتك، وسيرد عليك صاحب المتجر بأقرب وقت.",
+        meta: { from_bot: true, fallback: true },
+      })
+      return NextResponse.json({ error: "تعذر توليد رد", fallback: true }, { status: 200 })
     }
 
     const handover = replyText.includes("سأحول محادثتك الآن لأحد ممثلي المتجر")
 
     await supabaseAdmin.from("messages").insert({
       conversation_id: conversationId,
-      sender_id: conv.merchant_id,
+      sender_id: recipientId,
       content: replyText,
       meta: { from_bot: true },
     })
 
-    if (handover) {
-      await supabaseAdmin.from("conversations").update({ ai_muted: true }).eq("id", conversationId)
-    }
 
     return NextResponse.json({ ok: true, handover })
   } catch (err) {

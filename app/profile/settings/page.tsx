@@ -123,7 +123,7 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ role: "customer" })
+        .update({ role: "customer", assistant_enabled: false })
         .eq("id", user.id);
       if (error) throw error;
       await supabase.from("products").update({ is_active: false }).eq("merchant_id", user.id);

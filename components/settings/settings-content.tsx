@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,16 @@ export function SettingsContent() {
   const [hoursStart, setHoursStart] = useState((profile as any)?.bot_hours_start?.slice(0, 5) ?? "09:00")
   const [hoursEnd, setHoursEnd] = useState((profile as any)?.bot_hours_end?.slice(0, 5) ?? "22:00")
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!profile) return
+    const p = profile as any
+    setAssistantEnabled(p.assistant_enabled ?? false)
+    setInstructions(p.assistant_instructions ?? "")
+    setHoursEnabled(p.bot_hours_enabled ?? false)
+    setHoursStart(p.bot_hours_start?.slice(0, 5) ?? "09:00")
+    setHoursEnd(p.bot_hours_end?.slice(0, 5) ?? "22:00")
+  }, [profile?.id])
 
   const notificationItems = [
     {
