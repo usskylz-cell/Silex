@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Settings, Grid3x3, Bookmark, Heart, Share2, User as UserIcon, Search, Plus, Store } from "lucide-react";
+import { Settings, Grid3x3, Bookmark, Heart, Share2, User as UserIcon, Search, Plus, Store, Megaphone } from "lucide-react";
 import { useProfile } from "@/lib/useProfile";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/lib/cart-context";
@@ -140,10 +140,16 @@ export default function ProfilePage() {
 
       <div className="px-6 mt-3 md:max-w-md md:mx-auto">
         {isMerchant ? (
-          <Link href="/dashboard" className="flex items-center justify-center gap-2 border border-line rounded-pill py-2.5 text-sm font-semibold">
+          <>
+            <Link href="/dashboard" className="flex items-center justify-center gap-2 border border-line rounded-pill py-2.5 text-sm font-semibold">
             <Store size={15} />
             لوحتي
           </Link>
+            <Link href="/dashboard/ads" className="flex items-center justify-center gap-2 border border-line rounded-pill py-2.5 text-sm font-semibold">
+              <Megaphone size={15} />
+              الإعلانات
+            </Link>
+          </>
         ) : (
           <Link href="/profile/merchant-setup" className="flex items-center justify-center gap-2 border border-ink rounded-pill py-2.5 text-sm font-semibold">
             <Store size={15} />
