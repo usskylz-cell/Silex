@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -87,7 +89,7 @@ export default function PostDetailPage() {
   async function addToCart() {
     if (!post?.product_id) return;
     const p = await getProduct(post.product_id);
-    if (!p) return alert("هذا المنتج غير متوفر");
+    if (!p) return toast.error("هذا المنتج غير متوفر");
     add(p, 1, { color: null, size: null });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -192,7 +194,7 @@ export default function PostDetailPage() {
       }
     } else {
       await navigator.clipboard.writeText(url);
-      alert("تم نسخ الرابط");
+      toast.success("تم نسخ الرابط");
     }
   }
 
@@ -203,7 +205,7 @@ export default function PostDetailPage() {
   }
 
   async function handleHide() {
-    alert("تم إخفاء هذا المنشور");
+    toast.success("تم إخفاء هذا المنشور");
   }
 
   async function handleReport() {
@@ -213,7 +215,7 @@ export default function PostDetailPage() {
       router.push("/login");
       return;
     }
-    alert("شكراً، تم استقبال إبلاغك");
+    toast.error("شكراً، تم استقبال إبلاغك");
   }
 
   function toggleMute() {
@@ -223,7 +225,7 @@ export default function PostDetailPage() {
   }
 
   if (post === undefined) {
-    return <p className="p-6 text-sm text-muted text-center">جارٍ التحميل...</p>;
+    return <PageLoading />;
   }
   if (!post) {
     return <p className="p-6 text-sm text-muted text-center">هذا المنشور غير موجود.</p>;

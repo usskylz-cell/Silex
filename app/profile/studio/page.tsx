@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Plus, Check, Play, AlertCircle, RefreshCw, Megaphone } from "lucide-react";
@@ -116,7 +117,7 @@ export default function StudioPage() {
     });
   }, []);
 
-  if (authLoading) return null;
+  if (authLoading) return <PageLoading />;
   if (!user) {
     router.replace("/login");
     return null;

@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,7 +33,7 @@ export default function MerchantSetupPage() {
     setWhatsapp(profile.whatsapp ?? "");
   }, [profile]);
 
-  if (loading) return <p className="p-6 text-sm text-muted text-center">جارٍ التحميل...</p>;
+  if (loading) return <PageLoading />;
   if (!user) {
     router.replace("/login");
     return null;

@@ -1,8 +1,10 @@
 "use client";
 
+import { toast } from "sonner";
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Settings, Grid3x3, Bookmark, Heart, Share2, User as UserIcon, Search, Plus, ShoppingBag, Store } from "lucide-react";
+import { Settings, Grid3x3, Bookmark, Heart, Share2, User as UserIcon, Search, Plus, Store } from "lucide-react";
 import { useProfile } from "@/lib/useProfile";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/lib/cart-context";
@@ -14,7 +16,7 @@ type Post = { id: string; image_url: string; caption: string | null };
 
 export default function ProfilePage() {
   const { user, profile, loading } = useProfile();
-  const { favorites, count } = useCart();
+  const { favorites } = useCart();
 
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
@@ -54,11 +56,11 @@ export default function ProfilePage() {
       try { await navigator.share({ title: profile?.full_name ?? "ساليكس", url }); } catch {}
     } else {
       await navigator.clipboard.writeText(url);
-      alert("تم نسخ رابط الملف الشخصي");
+      toast.success("تم نسخ رابط الملف الشخصي");
     }
   }
 
-  if (loading) return <p className="text-center text-sm text-muted py-20">جارٍ التحميل...</p>;
+  if (loading) return <PageLoading />;
 
   if (!user) {
     return (
@@ -86,14 +88,6 @@ export default function ProfilePage() {
   return (
     <div className="pb-10">
       <div className="flex items-center justify-end gap-2 px-6 pt-2 md:px-10">
-        <Link href="/cart" aria-label="السلة" className="relative w-9 h-9 rounded-full bg-chip flex items-center justify-center">
-          <ShoppingBag size={16} />
-          {count > 0 && (
-            <span className="absolute -top-1 -left-1 bg-ink text-white text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center">
-              {count}
-            </span>
-          )}
-        </Link>
         <Link href="/people" aria-label="بحث عن أشخاص" className="w-9 h-9 rounded-full bg-chip flex items-center justify-center">
           <Search size={16} />
         </Link>

@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState, Suspense, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -121,7 +122,7 @@ function ExploreContent() {
       </div>
 
       {!loaded ? (
-        <p className="text-center text-sm text-muted py-14">جارٍ التحميل...</p>
+        <PageLoading />
       ) : posts.length === 0 ? (
         <p className="text-center text-sm text-muted py-14">لا توجد منشورات في هذا التصنيف بعد</p>
       ) : (

@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -95,14 +97,14 @@ export default function UserProfilePage() {
       router.push(`/chat/${created.id}`);
     } catch (err) {
       console.error("handleMessage error:", err);
-      alert("تعذّر بدء المحادثة، حاول مجدداً");
+      toast.error("تعذّر بدء المحادثة، حاول مجدداً");
     } finally {
       setStarting(false);
     }
   }
 
   if (profile === undefined) {
-    return <p className="p-6 text-sm text-muted text-center">جارٍ التحميل...</p>;
+    return <PageLoading />;
   }
 
   if (!profile) {

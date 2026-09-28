@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,7 +33,7 @@ export default function BlockedUsersPage() {
     setBlocked((prev) => (prev ?? []).filter((b) => b.blocked_id !== blockedId));
   }
 
-  if (loading) return <p className="p-6 text-sm text-muted text-center">جارٍ التحميل...</p>;
+  if (loading) return <PageLoading />;
   if (!user) {
     router.replace("/login");
     return null;
@@ -49,7 +50,7 @@ export default function BlockedUsersPage() {
 
       <div className="px-6 mt-2 flex flex-col gap-2">
         {blocked === null ? (
-          <p className="text-sm text-muted text-center py-10">جارٍ التحميل...</p>
+          <PageLoading />
         ) : blocked.length === 0 ? (
           <p className="text-sm text-muted text-center py-10">لا يوجد حسابات محظورة</p>
         ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -101,14 +102,14 @@ export function CommentsSheet({
       setEditingId(null);
       setEditText("");
     } else {
-      alert("تعذّر حفظ التعديل");
+      toast.error("تعذّر حفظ التعديل");
     }
   }
 
   async function reportComment(commentId: string) {
     const reason = prompt("ما سبب الإبلاغ؟");
     if (!reason) return;
-    alert("شكراً، تم استقبال إبلاغك");
+    toast.error("شكراً، تم استقبال إبلاغك");
     setShowMenuId(null);
   }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -54,7 +55,7 @@ export default function SettingsPage() {
   }, [user]);
 
   if (loading) {
-    return <p className="p-6 text-sm text-muted text-center">جارٍ التحميل...</p>;
+    return <PageLoading />;
   }
 
   if (!user) {

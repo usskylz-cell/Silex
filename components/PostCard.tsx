@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -122,14 +123,14 @@ export function PostCard({ post }: { post: FeedPost }) {
       try { await navigator.share({ url }); } catch {}
     } else {
       await navigator.clipboard.writeText(url);
-      alert("تم نسخ الرابط");
+      toast.success("تم نسخ الرابط");
     }
   }
 
   async function addToCart() {
     if (!post.product_id) return;
     const p = await getProduct(post.product_id);
-    if (!p) return alert("هذا المنتج غير متوفر");
+    if (!p) return toast.error("هذا المنتج غير متوفر");
     add(p, 1, { color: null, size: null });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);

@@ -5,10 +5,14 @@ import { supabase } from "@/lib/supabase";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
-import { Home, Compass, User, MessageCircle, PlusSquare } from "lucide-react";
+import { Home, Compass, User, MessageCircle, PlusSquare, Search, ShoppingBag } from "lucide-react";
+import { useCart } from "@/lib/cart-context";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { count } = useCart();
 
   const isAuthPage =
     pathname === "/" ||
@@ -17,7 +21,6 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/auth");
 
-  const router = useRouter();
   const [ready, setReady] = useState(false);
   const [isMerchant, setIsMerchant] = useState(false);
 
@@ -56,7 +59,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
     return <main className="min-h-screen w-full bg-[#ECE9E2]">{children}</main>;
   }
 
-  if (!ready) return null;
+  if (!ready) return <PageSkeleton />;
 
   const navItems = isMerchant
     ? [
@@ -73,55 +76,97 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         { label: "حسابي", href: "/profile", icon: User },
       ];
 
-  return (
-    <div className="flex flex-col min-h-screen bg-paper text-[#1e3a5f] dir-rtl">
-      {/* 1. الهيدر العلوي (Header) */}
-      <header className="sticky top-0 z-40 w-full bg-paper border-b-2 border-[#1e3a5f]/15 px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/home" className="flex items-center gap-2">
-            <Logo className="h-7 w-auto text-[#1e3a5f]" />
-          </Link>
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
-          {/* روابط التنقل تظهر بالهيدر على الشاشات الكبيرة فقط */}
-          <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`text-sm font-medium transition-colors ${
-                    isActive ? "text-[#1e3a5f] font-bold" : "text-[#1e3a5f]/60 hover:text-[#1e3a5f]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+  const badge =
+    count > 0 ? (
+      <span className="absolute -top-1 -left-1 bg-[#1e3a5f] text-white text-[10px] font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
+        {count}
+      </span>
+    ) : null;
+
+  return (
+    <div className="min-h-screen bg-paper text-[#1e3a5f]">
+      {/* شريط جانبي - كمبيوتر */}
+      <aside className="hidden md:flex fixed top-0 bottom-0 right-0 w-64 flex-col border-l-2 border-[#1e3a5f]/15 bg-paper p-4 z-40">
+        <Link href="/home" className="px-3 py-4 mb-2">
+          <Logo className="h-8 w-auto text-[#1e3a5f]" />
+        </Link>
+        <nav className="flex flex-col gap-1">
+          {[...navItems, { label: "بحث", href: "/search", icon: Search }].map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors ${
+                  active ? "bg-[#1e3a5f]/10 font-bold" : "text-[#1e3a5f]/60 hover:bg-[#1e3a5f]/5 hover:text-[#1e3a5f]"
+                }`}
+              >
+                <Icon size={20} className={active ? "stroke-[2.5px]" : "stroke-[1.75px]"} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="mt-auto border-t border-[#1e3a5f]/15 pt-3">
+          <Link
+            href="/cart"
+            className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors ${
+              isActive("/cart") ? "bg-[#1e3a5f]/10 font-bold" : "text-[#1e3a5f]/70 hover:bg-[#1e3a5f]/5"
+            }`}
+          >
+            <span className="relative">
+              <ShoppingBag size={20} />
+              {badge}
+            </span>
+            السلة
+          </Link>
+        </div>
+      </aside>
+
+      {/* هيدر علوي - موبايل */}
+      <header className="md:hidden sticky top-0 z-40 flex items-center justify-between bg-paper border-b-2 border-[#1e3a5f]/15 px-4 py-3">
+        <Link href="/home">
+          <Logo className="h-7 w-auto text-[#1e3a5f]" />
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/search"
+            aria-label="بحث"
+            className="w-10 h-10 rounded-full bg-[#1e3a5f]/5 flex items-center justify-center"
+          >
+            <Search size={18} />
+          </Link>
+          <Link
+            href="/cart"
+            aria-label="السلة"
+            className="relative w-10 h-10 rounded-full bg-[#1e3a5f]/5 flex items-center justify-center"
+          >
+            <ShoppingBag size={18} />
+            {badge}
+          </Link>
         </div>
       </header>
 
-      {/* 2. المحتوى الرئيسي للموقع (Main Content) */}
-      <main className="flex-1 max-w-7xl w-full mx-auto pb-20 md:pb-6 px-4 py-4">
-        {children}
-      </main>
+      <main className="md:mr-64 max-w-5xl mx-auto w-full px-4 py-4 pb-24 md:pb-6">{children}</main>
 
-      {/* 3. شريط التنقل السفلي للأجهزة المحمولة (Mobile Bottom Navigation) */}
+      {/* شريط سفلي - موبايل */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-paper border-t-2 border-[#1e3a5f]/15 px-4 py-2">
         <div className="flex items-center justify-around max-w-md mx-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center gap-1 p-1.5 text-[10px] font-medium transition-colors ${
-                  isActive ? "text-[#1e3a5f] font-bold" : "text-[#1e3a5f]/50 hover:text-[#1e3a5f]"
+                  active ? "text-[#1e3a5f] font-bold" : "text-[#1e3a5f]/50 hover:text-[#1e3a5f]"
                 }`}
               >
-                <Icon size={20} className={isActive ? "stroke-[2.5px]" : "stroke-[1.75px]"} />
+                <Icon size={20} className={active ? "stroke-[2.5px]" : "stroke-[1.75px]"} />
                 <span>{item.label}</span>
               </Link>
             );

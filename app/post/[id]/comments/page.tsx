@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronRight, Send, User as UserIcon, MoreVertical, Trash2, Flag, Pencil, X, Check } from "lucide-react";
@@ -83,14 +84,14 @@ export default function PostCommentsPage() {
       setEditingId(null);
       setEditText("");
     } else {
-      alert("تعذّر حفظ التعديل");
+      toast.error("تعذّر حفظ التعديل");
     }
   }
 
   async function reportComment(commentId: string) {
     const reason = prompt("ما سبب الإبلاغ؟");
     if (!reason) return;
-    alert("شكراً، تم استقبال إبلاغك");
+    toast.error("شكراً، تم استقبال إبلاغك");
     setShowMenuId(null);
   }
 

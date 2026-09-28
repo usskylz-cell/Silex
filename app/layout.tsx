@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Toaster } from "sonner";
 import { AppChrome } from "@/components/AppChrome";
 import { CartProvider } from "@/lib/cart-context";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body className="min-h-screen bg-paper text-ink antialiased">
+        <Toaster position="top-center" dir="rtl" richColors />
         <CartProvider>
           <AppChrome>{children}</AppChrome>
         </CartProvider>

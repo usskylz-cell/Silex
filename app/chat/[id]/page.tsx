@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -166,7 +167,7 @@ export default function ChatDetailPage() {
         prod ? { type: "product", id: prod.id, name: prod.name, price: prod.price, image: prod.image } : stor ? { type: "story", id: stor.id, text: stor.text, bg: stor.bg, image: stor.image } : undefined
       );
     } catch (err: any) {
-      alert(err.message || "حدث خطأ أثناء الإرسال");
+      toast.error(err.message || "حدث خطأ أثناء الإرسال");
       setText(value);
     } finally {
       setSending(false);
@@ -194,7 +195,7 @@ export default function ChatDetailPage() {
     const { error } = await supabase.from("blocks").insert({ blocker_id: userId, blocked_id: partner.id });
     setShowMenu(false);
     if (error) {
-      alert("تعذّر الحظر، حاول مجدداً");
+      toast.error("تعذّر الحظر، حاول مجدداً");
       return;
     }
     router.push("/chat");
@@ -212,10 +213,10 @@ export default function ChatDetailPage() {
     setShowReport(false);
     setReportDetails("");
     if (error) {
-      alert("تعذّر إرسال البلاغ، حاول مجدداً");
+      toast.error("تعذّر إرسال البلاغ، حاول مجدداً");
       return;
     }
-    alert("تم إرسال البلاغ، شكراً لك");
+    toast.success("تم إرسال البلاغ، شكراً لك");
   }
 
   function findMessage(id: string | null | undefined) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useProfile } from "@/lib/useProfile";
@@ -9,7 +10,7 @@ export default function MyStoriesPage() {
   const router = useRouter();
   const { user, profile, loading } = useProfile();
 
-  if (loading) return <p className="p-6 text-sm text-muted text-center">جارٍ التحميل...</p>;
+  if (loading) return <PageLoading />;
   if (!user || !profile) {
     router.replace("/login");
     return null;

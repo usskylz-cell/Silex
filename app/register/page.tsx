@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -71,7 +72,7 @@ export default function RegisterPage() {
         router.push("/home");
       } else {
         setErr("");
-        alert("تم إنشاء الحساب! تحقق من بريدك الإلكتروني لتفعيله إن لزم.");
+        toast.success("تم إنشاء الحساب! تحقق من بريدك الإلكتروني لتفعيله إن لزم.");
         router.push("/login");
       }
     } catch (error) {

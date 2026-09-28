@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Search as SearchIcon } from "lucide-react";
 import { useProfile } from "@/lib/useProfile";
 import { StoriesBar } from "@/components/StoriesBar";
 import { PostCard, type FeedPost } from "@/components/PostCard";
@@ -37,11 +36,6 @@ export default function HomePage() {
 
   return (
     <div className="pb-10">
-      <div className="flex items-center justify-end px-6 pt-4 md:hidden">
-        <Link href="/search" aria-label="بحث" className="w-10 h-10 rounded-full bg-chip flex items-center justify-center">
-          <SearchIcon size={18} />
-        </Link>
-      </div>
 
       <StoriesBar />
 

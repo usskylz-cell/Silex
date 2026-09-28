@@ -1,5 +1,6 @@
 "use client";
 
+import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
@@ -62,7 +63,7 @@ export default function EditPostPage() {
     router.push(`/post/${params.id}`);
   }
 
-  if (loading) return <p className="p-6 text-sm text-muted text-center">جارٍ التحميل...</p>;
+  if (loading) return <PageLoading />;
 
   return (
     <div className="max-w-sm mx-auto px-6 py-6">

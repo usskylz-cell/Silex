@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
@@ -75,7 +76,7 @@ export function BookChatButton({
       const qs = q.toString();
       router.push(`/chat/${convId}${qs ? `?${qs}` : ""}`);
     } catch (e: any) {
-      alert(e?.message || "تعذّر فتح الدردشة، حاول مجدداً");
+      toast.error(e?.message || "تعذّر فتح الدردشة، حاول مجدداً");
     } finally {
       setBusy(false);
     }

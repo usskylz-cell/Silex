@@ -183,16 +183,18 @@ export default function ProductPage() {
               )}
             </div>
           </div>
-          <button
-            onClick={() => {
-              add(product, 1, { color: product.colors?.[color] ?? null, size });
-              setAdded(true);
-              setTimeout(() => setAdded(false), 1500);
-            }}
-            className="flex-1 bg-ink text-white rounded-pill py-3.5 text-sm font-semibold"
-          >
-            {added ? "أُضيف ✓" : "أضف إلى السلة"}
-          </button>
+          {!loading && viewerId !== product.merchantId && (
+            <button
+              onClick={() => {
+                add(product, 1, { color: product.colors?.[color] ?? null, size });
+                setAdded(true);
+                setTimeout(() => setAdded(false), 1500);
+              }}
+              className="flex-1 bg-ink text-white rounded-pill py-3.5 text-sm font-semibold"
+            >
+              {added ? "أُضيف ✓" : "أضف إلى السلة"}
+            </button>
+          )}
         </div>
 
         {!loading && viewerId !== product.merchantId && (
