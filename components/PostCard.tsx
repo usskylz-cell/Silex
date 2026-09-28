@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/lib/useProfile";
 import { useCart } from "@/lib/cart-context";
 import { getProduct } from "@/lib/catalog";
+import { FollowButton } from "@/components/FollowButton";
 
 export type FeedPost = {
   id: string;
@@ -31,6 +32,24 @@ export type FeedPost = {
   } | null;
 };
 
+let followingCache: { uid: string; ids: Set<string>; promise?: Promise<Set<string>> } | null = null;
+
+function loadFollowing(uid: string): Promise<Set<string>> {
+  if (followingCache && followingCache.uid === uid) {
+    if (followingCache.promise) return followingCache.promise;
+    return Promise.resolve(followingCache.ids);
+  }
+  const promise = Promise.resolve(
+    supabase.from("follows").select("merchant_id").eq("follower_id", uid)
+  ).then(({ data }) => {
+    const ids = new Set(((data ?? []) as { merchant_id: string }[]).map((r) => r.merchant_id));
+    followingCache = { uid, ids };
+    return ids;
+  });
+  followingCache = { uid, ids: new Set(), promise };
+  return promise;
+}
+
 export function PostCard({ post }: { post: FeedPost }) {
   const router = useRouter();
   const { user: viewer } = useProfile();
@@ -40,12 +59,22 @@ export function PostCard({ post }: { post: FeedPost }) {
   const [saved, setSaved] = useState(post.saved);
   const [added, setAdded] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [following, setFollowing] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
   const authorName =
     post.author?.store_name ?? post.author?.full_name ?? post.author?.username ?? "مستخدم";
   const isOwner = viewer?.id === post.user_id;
+
+  useEffect(() => {
+    if (!viewer || viewer.id === post.user_id) return;
+    let alive = true;
+    loadFollowing(viewer.id).then((ids) => {
+      if (alive) setFollowing(ids.has(post.user_id));
+    });
+    return () => { alive = false; };
+  }, [viewer?.id, post.user_id]);
 
   // تشغيل تلقائي عند الظهور وإيقاف عند الخروج
   useEffect(() => {
@@ -108,16 +137,33 @@ export function PostCard({ post }: { post: FeedPost }) {
 
   return (
     <div className="bg-card rounded-2xl overflow-hidden shadow-float">
-      <Link href={`/u/${post.user_id}`} className="flex items-center gap-2 px-4 py-3">
-        <div className="w-8 h-8 rounded-full bg-chip flex items-center justify-center overflow-hidden">
-          {post.author?.avatar_url ? (
-            <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <UserIcon size={14} className="text-ink/40" />
-          )}
-        </div>
-        <p className="text-sm font-semibold">{authorName}</p>
-      </Link>
+      <div className="flex items-center gap-2 px-4 py-3">
+        <Link href={`/u/${post.user_id}`} className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-chip flex items-center justify-center overflow-hidden shrink-0">
+            {post.author?.avatar_url ? (
+              <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <UserIcon size={14} className="text-ink/40" />
+            )}
+          </div>
+          <p className="text-sm font-semibold truncate">{authorName}</p>
+        </Link>
+        {!isOwner && viewer && following !== null && (
+          <FollowButton
+            merchantId={post.user_id}
+            viewerId={viewer.id}
+            initial={following}
+            size="sm"
+            onChange={(f) => {
+              setFollowing(f);
+              if (followingCache && followingCache.uid === viewer.id) {
+                if (f) followingCache.ids.add(post.user_id);
+                else followingCache.ids.delete(post.user_id);
+              }
+            }}
+          />
+        )}
+      </div>
 
       {post.media_type !== "text" && post.image_url && (
         <div ref={boxRef} className="relative w-full aspect-square bg-chip">

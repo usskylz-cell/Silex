@@ -87,7 +87,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold tracking-tight text-[#111111] mb-1">
-            مرحباً بك في سالكس
+            مرحباً بك في ساليكس
           </h1>
           <p className="text-xs text-[#111111]/60">
             سجل دخولك لحفظ جلساتك ومتابعة طلباتك

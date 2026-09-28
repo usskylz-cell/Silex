@@ -5,8 +5,8 @@ import { CartProvider } from "@/lib/cart-context";
 
 export const metadata: Metadata = {
   title: {
-    default: "سوق سالكس | Salix",
-    template: "%s | سوق سالكس",
+    default: "سوق ساليكس | Salix",
+    template: "%s | سوق ساليكس",
   },
   description: "تسوّق مباشرةً من الصنّاع، اكتشف قطعاً صُممت لأجلك",
   icons: {

@@ -51,7 +51,7 @@ export default function ProfilePage() {
   async function handleShare() {
     const url = `${window.location.origin}/u/${user?.id}`;
     if (navigator.share) {
-      try { await navigator.share({ title: profile?.full_name ?? "سالكس", url }); } catch {}
+      try { await navigator.share({ title: profile?.full_name ?? "ساليكس", url }); } catch {}
     } else {
       await navigator.clipboard.writeText(url);
       alert("تم نسخ رابط الملف الشخصي");

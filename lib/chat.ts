@@ -320,54 +320,34 @@ await supabase.from("messages").update({ is_pinned: !currentPinStatus }).eq("id"
 
 
 export async function markAsRead(convId: string, userId: string) {
-
-await supabase
-
-.from("messages")
-
-.update({ read_at: new Date().toISOString() })
-
-.eq("conversation_id", convId)
-
-.neq("sender_id", userId)
-
-.is("read_at", null);
-
+  const { error } = await supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("conversation_id", convId)
+    .neq("sender_id", userId)
+    .is("read_at", null);
+  if (error) console.error("markAsRead failed:", error.message);
 }
 
 
-export function subscribeToMessages(convId: string, onNewMessage: (msg: ChatMessage) => void) {
-
-return supabase
-
-.channel(`chat:${convId}`)
-
-.on(
-
-"postgres_changes",
-
-{
-
-event: "INSERT",
-
-schema: "public",
-
-table: "messages",
-
-filter: `conversation_id=eq.${convId}`,
-
-},
-
-(payload) => {
-
-onNewMessage(payload.new as ChatMessage);
-
-}
-
-)
-
-.subscribe();
-
+export function subscribeToMessages(
+  convId: string,
+  onNewMessage: (msg: ChatMessage) => void,
+  onUpdateMessage?: (msg: ChatMessage) => void
+) {
+  return supabase
+    .channel(`chat:${convId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${convId}` },
+      (payload) => onNewMessage(payload.new as ChatMessage)
+    )
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${convId}` },
+      (payload) => onUpdateMessage?.(payload.new as ChatMessage)
+    )
+    .subscribe();
 }
 
 

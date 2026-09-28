@@ -89,7 +89,7 @@ export default function RegisterPage() {
             إنشاء حساب جديد
           </h1>
           <p className="text-xs text-[#111111]/60">
-            انضم إلى سالكس وابدأ التسوّق الآن
+            انضم إلى ساليكس وابدأ التسوّق الآن
           </p>
         </div>
 

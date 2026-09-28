@@ -94,10 +94,16 @@ export default function ChatDetailPage() {
       setMessages(msgs);
       await markAsRead(convId, user.id);
 
-      const channel = subscribeToMessages(convId, (newMsg) => {
-        setMessages((prev) => (prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg]));
-        markAsRead(convId, user.id);
-      });
+      const channel = subscribeToMessages(
+        convId,
+        (newMsg) => {
+          setMessages((prev) => (prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg]));
+          markAsRead(convId, user.id);
+        },
+        (updated) => {
+          setMessages((prev) => prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)));
+        }
+      );
 
       unsub = () => channel.unsubscribe();
     }

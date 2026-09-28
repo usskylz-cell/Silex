@@ -108,12 +108,12 @@ export function AuthGate() {
           S
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
-          {isLogin ? "مرحباً بك في سالكس" : "إنشاء حساب جديد"}
+          {isLogin ? "مرحباً بك في ساليكس" : "إنشاء حساب جديد"}
         </h1>
         <p className="text-xs text-slate-400">
           {isLogin
             ? "سجل دخولك لحفظ جلساتك ومتابعة طلباتك"
-            : "انضم إلى منصة سالكس واستمتع بكافة الميزات"}
+            : "انضم إلى منصة ساليكس واستمتع بكافة الميزات"}
         </p>
       </div>
 
