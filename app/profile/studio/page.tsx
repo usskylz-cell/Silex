@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { PageLoading } from "@/components/ui/Skeleton";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -108,6 +109,7 @@ export default function StudioPage() {
   const [progress, setProgress] = useState(0);
   const [pickErr, setPickErr] = useState("");
   const [err, setErr] = useState("");
+  const [fieldErr, setFieldErr] = useState<{ category?: string; title?: string; price?: string }>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -178,10 +180,17 @@ export default function StudioPage() {
 
   async function publish() {
     if (!file) return;
-    if (!category) return setErr("اختر التصنيف");
-    if (!title.trim()) return setErr("اكتب عنوان المنتج");
     const priceNum = Number(toEnglishDigits(price).replace(/[^\d.]/g, ""));
-    if (!priceNum || priceNum <= 0) return setErr("أدخل سعراً صحيحاً");
+    const errors: { category?: string; title?: string; price?: string } = {};
+    if (!category) errors.category = "اختر التصنيف";
+    if (title.trim().length < 3) errors.title = "العنوان قصير جداً (3 أحرف على الأقل)";
+    if (!priceNum || priceNum <= 0) errors.price = "أدخل سعراً صحيحاً";
+    else if (priceNum > 1000000) errors.price = "السعر مرتفع جداً";
+    setFieldErr(errors);
+    if (Object.keys(errors).length) {
+      if (errors.category) toast.error(errors.category);
+      return;
+    }
 
     setStep("publishing");
     setErr("");
@@ -379,10 +388,11 @@ export default function StudioPage() {
             <p className="text-[11px] text-muted mb-1.5 px-1">عنوان المنتج</p>
             <input
               value={title}
-              onChange={(e) => setTitle(e.target.value.slice(0, 80))}
+              onChange={(e) => { setTitle(e.target.value.slice(0, 80)); setFieldErr((f) => ({ ...f, title: undefined })); }}
               placeholder="مثال: حقيبة جلد طبيعي"
               className="w-full bg-chip rounded-2xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-ink/20"
             />
+            {fieldErr.title && <p className="text-[11px] text-red-600 mt-1 px-1">{fieldErr.title}</p>}
           </div>
 
           {/* السعر */}
@@ -390,11 +400,12 @@ export default function StudioPage() {
             <p className="text-[11px] text-muted mb-1.5 px-1">السعر</p>
             <input
               value={price}
-              onChange={(e) => setPrice(toEnglishDigits(e.target.value).replace(/[^\d.]/g, ""))}
+              onChange={(e) => { const v = toEnglishDigits(e.target.value).replace(/[^\d.]/g, ""); const parts = v.split("."); setPrice(parts.length > 1 ? parts[0] + "." + parts.slice(1).join("").slice(0, 2) : v); setFieldErr((f) => ({ ...f, price: undefined })); }}
               inputMode="decimal"
               placeholder="0.00"
               className="w-full bg-chip rounded-2xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-ink/20"
             />
+            {fieldErr.price && <p className="text-[11px] text-red-600 mt-1 px-1">{fieldErr.price}</p>}
           </div>
 
           {/* نبذة */}
