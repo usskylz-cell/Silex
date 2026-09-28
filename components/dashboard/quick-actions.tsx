@@ -53,6 +53,13 @@ export function QuickActions() {
       >
         <Link href="/dashboard/inventory">إضافة منتج</Link>
       </Button>
+      <Button
+        asChild
+        variant="outline"
+        className="w-full sm:w-auto h-9 text-sm transition-all duration-300 hover:shadow-md hover:scale-105 bg-transparent"
+      >
+        <Link href="/dashboard/ads">إعلان جديد</Link>
+      </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">

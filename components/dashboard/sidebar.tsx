@@ -8,6 +8,7 @@ import {
   Settings,
   HelpCircle,
   Store,
+  Megaphone,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
@@ -19,6 +20,7 @@ const menuItems = [
   { icon: BookOpen, label: "دفتر الديون", href: "/dashboard/debts" },
   { icon: Warehouse, label: "المخازن", href: "/dashboard/inventory" },
   { icon: BarChart3, label: "تحليل المنتجات", href: "/dashboard/analytics" },
+  { icon: Megaphone, label: "الإعلانات", href: "/dashboard/ads" },
 ]
 
 const generalItems = [
