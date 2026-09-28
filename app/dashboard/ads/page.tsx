@@ -211,7 +211,7 @@ export default function AdsPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-3xl">
+    <div className="p-4 pb-28 md:p-6 space-y-6 max-w-3xl">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-foreground">الإعلانات</h1>
